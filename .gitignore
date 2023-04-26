@@ -1,5 +1,6 @@
 /.ipynb_checkpoints
 /.vscode
 move_file.sh
+move_file.py
 *.xls
 *.xlsx
