@@ -4,10 +4,10 @@ currentily it cannot be used as standalone application, it must be imported,
 It cannot plot any data, if requested it can
 maybe in the future, depending on how many application we need to use ti can be expanded
 """
-
+#%%
 import pandas as pd
-# import numpy as np
 from pathlib import Path
+import os
 
 def clean(path_data : str | Path  , path_zero : str | Path, params_data : dict = None, params_zero : dict = None, col_name : str = "transmittance" , new_col_name : str = "polished" ):
     """
@@ -20,22 +20,23 @@ def clean(path_data : str | Path  , path_zero : str | Path, params_data : dict =
     - new_col_name: name of the new column produced
     """
     # Operation to get some names
-    base_name  = Path.basename(path_data).split('.')[0]
-    dir_name = Path.dirname(path_data)
+    base_name  = Path(path_data).name.split('.')[0]
+    dir_name = Path(path_data).parent
     # Return address
-    return_dir = Path.relpath("./ELAB")
+    return_dir = dir_name.joinpath("./ELAB")
+    print(return_dir)
     # Change to operating dir, in this way I can use only relative paths    
-    Path.chdir(dir_name)
+    # os.chdir(dir_name)
     # Check if return adress exists, if not create it
     if return_dir.is_dir()==False:
         Path.mkdir(return_dir)
     # read
-    data = pd.read_table(Path.basename(path_data), **params_data)
-    zero = pd.read_table(Path.basename(path_zero), **params_zero)
+    data = pd.read_table(path_data, **params_data)
+    zero = pd.read_table(path_zero, **params_zero)
     # make operation
     data[new_col_name] = data[col_name] / zero[col_name]
     # return new data
-    data.to_csv(return_dir + base_name +".csv" , index=False)
+    data.to_csv(return_dir.as_posix() + "/" + base_name +".csv" , index=False)
 
 
 def clean_dir(path: str | Path, path_zero: str | Path, params_data : dict, params_zero : dict, col_name : str = "transmittance" , new_col_name : str = "polished"):
@@ -49,7 +50,18 @@ def clean_dir(path: str | Path, path_zero: str | Path, params_data : dict, param
     - new_col_name: name of the new column produced
     """
     for obj in Path(path).iterdir():
-        clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
+        print(obj)
+        if obj.is_dir() == False:
+            clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
+
+#%%
+kwords = {
+    'skiprows' : 75,
+    'names' : ("lambda", "transmittance")
+}
+
+clean_dir("./data/21-04", "data/21-04/Aria-Aria-900-350.txt", params_data=kwords, params_zero=kwords)
+
 
 
 
