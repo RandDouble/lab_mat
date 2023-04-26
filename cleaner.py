@@ -55,12 +55,12 @@ def clean_dir(path: str | Path, path_zero: str | Path, params_data : dict, param
             clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
 
 #%%
-kwords = {
-    'skiprows' : 75,
-    'names' : ("lambda", "transmittance")
-}
+# kwords = {
+#     'skiprows' : 75,
+#     'names' : ("lambda", "transmittance")
+# }
 
-clean_dir("./data/21-04", "data/21-04/Aria-Aria-900-350.txt", params_data=kwords, params_zero=kwords)
+# clean_dir("./data/21-04", "data/21-04/Aria-Aria-900-350.txt", params_data=kwords, params_zero=kwords)
 
 
 
