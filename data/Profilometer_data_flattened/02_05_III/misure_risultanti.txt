@@ -1,0 +1,5 @@
+file, distance, bins
+M1_flat.mat, 30.6, 1.5
+M2_flat.mat, 55.1, 1.5
+M3_flat.mat, 23.1, 1.5
+M4_flat.mat, 54.6, 2.0
