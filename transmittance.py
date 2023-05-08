@@ -1,5 +1,7 @@
 import numpy as np
 
+# se vedete le formule molto lunghe formattate in modo strano... Uso un formatter che si chiama Black...
+#  non ho disabilitato l'accorciamento automatico
 
 def transmittance(lmbd, n, k, n_0, n_1, t):
     """
