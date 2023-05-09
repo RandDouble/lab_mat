@@ -30,6 +30,6 @@ Sono file sorgenti di python, in questo caso sono tutte funzioni scritte ad oc p
 
 - [ ] riordinare i notebook, come notava stefano c'è un po' di merda che si può sistemare
 - [ ] Fare tutti i grafici mancanti... evidentemente ne mancano un po'
-- [ ] Dare ai file python una loro cartella... Idealmente chiamata src...
+- [x] Dare ai file python una loro cartella... Idealmente chiamata src...
 - [ ] La cartella Data si potrebbe riordinare per dargli un filo di chiarezza in più
-- eliminare il makefile che in questo frangente non serve a un cazzo.
+- [ ] Eliminare il makefile che in questo frangente non serve a un cazzo.
