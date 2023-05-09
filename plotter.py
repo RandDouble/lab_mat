@@ -6,7 +6,16 @@ More keystroke now is less keystroke tomorrow
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def plotter(data : pd.DataFrame, col_to_print : list, *, zero : pd.DataFrame = None, zero_columns : list = None ,label: list | str = None,  axis_names : list = (r"$lambda$ [m]", "Transmittance")):
+
+def plotter(
+    data: pd.DataFrame,
+    col_to_print: list,
+    *,
+    zero: pd.DataFrame = None,
+    zero_columns: list = None,
+    label: list | str = None,
+    axis_names: list = (r"$lambda$ [m]", "Transmittance")
+):
     """
     function to plot with some common denom:
         - data: principal data to print, it is a DataFrame
@@ -16,10 +25,10 @@ def plotter(data : pd.DataFrame, col_to_print : list, *, zero : pd.DataFrame = N
         - label: its name is self explanatory
         - axis_name: same as above
     """
-    
+
     fig, ax = plt.subplots()
 
-    ax.plot(*col_to_print, data=data, label= label[0])
+    ax.plot(*col_to_print, data=data, label=label[0])
     if zero:
         ax.plot(*zero_columns, data=zero, label=label[1])
     ax.set_xlabel(axis_names[0])
@@ -27,5 +36,3 @@ def plotter(data : pd.DataFrame, col_to_print : list, *, zero : pd.DataFrame = N
     ax.legend()
 
     return fig, ax
-
-

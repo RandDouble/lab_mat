@@ -1,5 +1,7 @@
 # lab_mat
 
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 Dove Stefano, Margherita  e Francesco tengono i suoi codici separati dal resto delle cose, ma comunque accessibili
 
 ## Cosa c'è in ogni file

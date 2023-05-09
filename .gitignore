@@ -5,3 +5,4 @@ move_file.sh
 move_file.py
 *.xls
 *.xlsx
+pyproject.toml

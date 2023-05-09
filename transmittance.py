@@ -1,7 +1,9 @@
 import numpy as np
 
-# se vedete le formule molto lunghe formattate in modo strano... Uso un formatter che si chiama Black...
-#  non ho disabilitato l'accorciamento automatico
+# se vedete le formule molto lunghe formattate in modo strano...
+# Uso un formatter che si chiama Black...
+# non ho disabilitato l'accorciamento automatico
+
 
 def transmittance(lmbd, n, k, n_0, n_1, t):
     """
@@ -14,7 +16,8 @@ def transmittance(lmbd, n, k, n_0, n_1, t):
     - n_2  : indice di rifrazione della superfice inferiore al film sottile (vetro)
     - t    : spessore del film sottile
     """
-    # Controllo se in input n e k siano funzioni oppure siano dei valori... se scopro che tutti usano almeno python 3.10 modifico i valori
+    # Controllo se in input n e k siano funzioni oppure siano dei valori...
+    # se scopro che tutti usano almeno python 3.10 modifico i valori
     if isinstance(n, callable) and isinstance(k, callable):
         c_1 = (n(lmbd) + n_0)(n_1 + n(lmbd))
         c_2 = (n(lmbd) - n_0)(n_1 - n(lmbd))
