@@ -7,3 +7,4 @@ move_file.py
 *.xls
 *.xlsx
 pyproject.toml
+*.DS_Store
