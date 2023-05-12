@@ -7,8 +7,8 @@ import numpy as np
 
 def transmittance(lmbd, n, k, n_0, n_1, t):
     """
-    Uso la formula indicata dalla Francesca nella sua ultima mail... Piano Piano la ottimizzo un po\'
-    per l\'uso, intanto:
+    Uso la formula indicata dalla Francesca nella sua ultima mail...
+    Piano Piano la ottimizzo un po\' per l\'uso, intanto:
     - lmbd : lambda, la lunghezza d'onda della luce incidente
     - n    : parte reale dell'indice di rifrazione complesso del film sottile
     - k    : parte complessa dell'indice di rifrazione complesso del film sottile
@@ -45,7 +45,8 @@ def transmittance(lmbd, n, k, n_0, n_1, t):
 
 def transmittane(lmbd, eta: complex | callable, n_0, n_1, t):
     """
-    versione di tranmittance che usa eta complesso, invece che l'indice di rifrazione diviso nelle sue componenti
+    versione di tranmittance che usa eta complesso,
+    invece che l'indice di rifrazione diviso nelle sue componenti
     """
 
     if isinstance(eta, callable):
