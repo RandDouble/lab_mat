@@ -67,7 +67,7 @@ def clean_dir(
     """
     for obj in Path(path).iterdir():
         print(obj)
-        if obj.is_dir() == False:
+        if obj.is_dir() == False and obj.stem != ".DS_Store":
             clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
 
 
