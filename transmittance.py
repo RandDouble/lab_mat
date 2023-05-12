@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import curve_fit
 
 # se vedete le formule molto lunghe formattate in modo strano...
 # Uso un formatter che si chiama Black...
@@ -58,7 +59,7 @@ def transmittane(lmbd, eta: complex | callable, n_0, n_1, t):
     transmittance(lmbd=lmbd, n=n, k=k, n_0=n_0, n_1=n_1, t=t)
 
 
-def Beer_Lambert(lmbd, k, t):
+def Beer_Lambert(lmbd: float | np.array, k: callable | np.ndarray, t: float):
     """
     - lmbd : lunghezza d'onda incidente
     - t    : spessore ipotizzato
@@ -68,3 +69,11 @@ def Beer_Lambert(lmbd, k, t):
         return np.exp(-4 * np.pi * k(lmbd) * t / lmbd)
     else:
         return np.exp(-4 * np.pi * k * t / lmbd)
+
+
+def fit_thickness(x_data, y_data, function_to_fit, p0 : tuple | list | np.array):
+    """
+    Funzione che si occupa di fare il fit dello spessore partendo dai dati del
+    profilometro.
+    """
+    curve_fit(function_to_fit, xdata=x_data, ydata=y_data)
