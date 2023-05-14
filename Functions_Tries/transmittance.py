@@ -139,10 +139,10 @@ class Transmittance:
         - k    : coefficente di assorbimento, può essere una funzione o un numero, è un parametro della classe stessa
         """
         if isinstance(self.k, Callable):
-            print("Calling with k function")
+            # print("Calling with k function")
             return np.exp(-4.0 * np.pi * self.k(lmbd) * t / lmbd)
         else:
-            print("Calling with k scalar")
+            # print("Calling with k scalar")
             return np.exp(-4.0 * np.pi * self.k * t / lmbd)
 
     def transmittance(
