@@ -212,7 +212,6 @@ def test():
     df = pd.read_csv(r"/Users/margheritapolgati/lab_mat/data/9_05_spettrofotometro/ELAB/gold_glass_trasm_4_cm_1.csv")
     johns = pd.read_csv(r"../data/book_data/Johnson.csv")
 
-    johns.wl *= 1e-6
     df["lambda"] *= 1e-9
 
     spl_john = CubicSpline(johns["wl"], johns["k"])
