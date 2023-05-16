@@ -44,6 +44,7 @@ def clean(
     zero = pd.read_table(path_zero, **params_zero)
     # make operation
     data[new_col_name] = data[col_name] / zero[col_name]
+    data["lambda"]*=1e-9
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
