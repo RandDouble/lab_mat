@@ -207,10 +207,11 @@ def test():
     import matplotlib.pyplot as plt
     from scipy.interpolate import CubicSpline
 
-    np.set_printoptions(precision=2)
+    np.set_printoptions(precision=4)
 
-    df = pd.read_csv("./data/Pre-21-04/oro_4_04_ELABORATO.csv")
-    johns = pd.read_csv("./data/book_data/Johnson.csv")
+    df = pd.read_csv(r"/Users/margheritapolgati/lab_mat/data/9_05_spettrofotometro/ELAB/gold_glass_trasm_4_cm_1.csv")
+    johns = pd.read_csv(r"../data/book_data/Johnson.csv")
+
     johns.wl *= 1e-6
     df["lambda"] *= 1e-9
 
@@ -220,7 +221,7 @@ def test():
         new_BL.beer_lambert,
         df[(df["lambda"] < 800e-9) & (df["lambda"] > 300e-9)]["lambda"],
         df[(df["lambda"] < 800e-9) & (df["lambda"] > 300e-9)]["polished"],
-        p0=1e-9,
+        p0=60e-9,
     )
 
     # (df["lambda"] < 800) & (df["lambda"] > 300)
@@ -236,10 +237,13 @@ def test():
     plt.plot(
         df["lambda"], new_BL.beer_lambert(df["lambda"], popt), label=f"fit: {popt} m"
     )
-    plt.plot(df["lambda"], new_BL.beer_lambert(df["lambda"], 4e-9), label="hyp: 4 nm")
+    # plt.plot(df["lambda"], new_BL.beer_lambert(df["lambda"], 50e-9), label="hyp: 4 nm")
+
 
     plt.legend()
 
 
 if __name__ == "__main__":
     test()
+
+# %%
