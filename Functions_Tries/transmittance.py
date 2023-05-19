@@ -77,36 +77,6 @@ from typing import Callable
 #         return np.exp(-4 * np.pi * k * t / lmbd)
 
 
-def fit_thickness(x_data, y_data, function_to_fit, p0: tuple | list | np.ndarray):
-    """
-    Funzione che si occupa di fare il fit dello spessore partendo dai dati del
-    profilometro. In teoria o si passa la beer lambert law, oppure si passa la formula di trasmittanza
-    scritta in questo modulo... Questa funzione esiste solo perchè si vogliono automatizzare un po' le cose.
-    """
-    popt, pcov, infodict, mesg, ier = curve_fit(
-        function_to_fit, xdata=x_data, ydata=y_data, p0=p0, full_output=True
-    )
-    # Vengono ritornati tramite popt i parametri iniziali ottimizzati
-    # pcov è la matrice delle covarianze, a noi in realtà interessano solo gli elementi sulla diagonale,
-    # che restituiscono i valori di varianza dei parametri inseriti
-    # infodict è un dizionario con alcuni parametri utili
-    # mesg da informazioni aggiuntive riguardo la soluzione
-    # ier indica solo se la soluzione è stato trovata, e quanto bene è stata trovata. NDR la soluzione è trovata solo se
-    # ier vale 1, 2, 3, 4... Fondamentalmente è inutile perchè stampo mesg a video.
-    print(f"Info riguardo la soluzione:\n{mesg}")
-
-    # vado a mostrare a video l'ultimo elemento dell'
-    # array, tanto alla fine della fiera è questa la cosa che più ci interessa.
-    print(f"Valore fittato di spessore: {popt[-1]}")
-
-    # Stampo a video l'errore che è l'ultimo valore della covarianza sotto radice quadrata.
-    print(f"Errore sullo spessore: {np.sqrt(np.diag(pcov))[-1]}")
-
-    # Vado a ritornare i valori di che ci interessano, quindi lo spessore e il suo errore
-    # Notare che non è un caso che nelle funzioni che ho scritto lo spessore fosse sempre l'ultimo parametro
-    return (popt[-1], np.sqrt(np.diag(pcov[-1])))
-
-
 # Nuova sezione, mi sono visto alcuni problemi nell'implementazione del curve fit, la roba più semplice che mi è venuta in mente
 # è di riscrivere la sezione precedente usando delle classi. In questo modo posso fissare alcuni parametri a priori.
 
@@ -120,14 +90,24 @@ class Transmittance:
     La riscrittura si è resa necessaria per semplificare alcuni problemi avuti con il fitting dei parametri.
     """
 
-    def __init__(self, n=None, k=None) -> None:
+    def __init__(self, n=None, k=None, n_0=None, n_1=None) -> None:
+        """
+        Parametri iniziali da fornire alla classe perchè questa possa funzionare
+        - n    : Indice di rifrazione del materiale da analizzare
+        - k    : Coefficene di estinzione del materiale da analizzare
+        - n_0  : Indice di rifrazione della superfice superiore al film sottile (aria)
+        - n_1  : Indice di rifrazione della superfice inferiore al film sottile (vetro)
+        """
+
         self.n: float | Callable[[np.ndarray | float], np.ndarray | float] = n
         self.k: float | Callable[[np.ndarray | float], np.ndarray | float] = k
+        self.n_0: float | Callable[[np.ndarray | float], np.ndarray | float] = n_0
+        self.n_1: float | Callable[[np.ndarray | float], np.ndarray | float] = n_1
 
     def beer_lambert(
         self,  # La classe stessa
         lmbd: float | np.ndarray,  # La lunghezza d'onda incledente
-        t: float,  # Lo spessore da fittare
+        t: float  # Lo spessore da fittare
     ) -> float | np.ndarray:
         """
         Calcola mediante la formula di Beer Lambert
@@ -148,9 +128,7 @@ class Transmittance:
     def transmittance(
         self,  # La classe stessa
         lmbd,  # La lunghezza d'onda
-        n_0,  # Indice di rifrazione del primo materiale
-        n_1,  # Indice di rifrazione del secondo materiale
-        t,  # Spessore
+        t  # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -158,27 +136,70 @@ class Transmittance:
         - lmbd : lambda, la lunghezza d'onda della luce incidente
         - n    : parte reale dell'indice di rifrazione complesso del film sottile
         - k    : parte complessa dell'indice di rifrazione complesso del film sottile
-        - n_1  : indice di rifrazione della superfice superiore al film sottile (aria)
-        - n_2  : indice di rifrazione della superfice inferiore al film sottile (vetro)
         - t    : spessore del film sottile
         """
         # Controllo se in input n e k siano funzioni oppure siano dei valori...
         # se scopro che tutti usano almeno python 3.10 modifico i valori
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
-            c_1 = (self.n(lmbd) + n_0)(n_1 + self.n(lmbd))
-            c_2 = (self.n(lmbd) - n_0)(n_1 - self.n(lmbd))
+            c_1 = (self.n(lmbd) + self.n_0) * (self.n_1 + self.n(lmbd))
+            c_2 = (self.n(lmbd) - self.n_0) * (self.n_1 - self.n(lmbd))
             alpha = np.exp(-4 * np.pi * self.k(lmbd) * t / lmbd)
-            T_num = 16 * self.n(lmbd) ** 2 * n_0 * n_1 * alpha
+            T_num = 16 * self.n(lmbd) ** 2 * self.n_0 * self.n_1 * alpha
             T_denom = (
                 c_1**2
                 + c_2**2 * alpha**2
                 + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
             )
         else:
-            c_1 = (self.n + n_0)(n_1 + self.n)
-            c_2 = (self.n - n_0)(n_1 - self.n)
+            c_1 = (self.n + self.n_0) * (self.n_1 + self.n)
+            c_2 = (self.n - self.n_0) * (self.n_1 - self.n)
+            # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
             alpha = np.exp(-4 * np.pi * self.k * t / lmbd)
-            T_num = 16 * self.n**2 * n_0 * n_1 * alpha
+            # Calcolo numeratore
+            T_num = 16 * self.n**2 * self.n_0 * self.n_1 * alpha
+            # Calcolo denominatore
+            T_denom = (
+                c_1**2
+                + c_2**2 * alpha**2
+                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n * t / lmbd)
+            )
+        T = T_num / T_denom
+        return T
+
+    def transmittance_n_free(
+        self,  # La classe stessa
+        lmbd,  # La lunghezza d'onda
+        n_1,  # Indice di rifrazione del primo materiale (Vetro)
+        t  # Spessore
+    ) -> float | np.ndarray:
+        """
+        Uso la formula indicata dalla Francesca nella sua ultima mail...
+        Piano Piano la ottimizzo un po\' per l\'uso, intanto:
+        - lmbd : lambda, la lunghezza d'onda della luce incidente
+        - n    : parte reale dell'indice di rifrazione complesso del film sottile
+        - k    : parte complessa dell'indice di rifrazione complesso del film sottile
+        - t    : spessore del film sottile
+        """
+        # Controllo se in input n e k siano funzioni oppure siano dei valori...
+        # se scopro che tutti usano almeno python 3.10 modifico i valori
+        if isinstance(self.n, Callable) and isinstance(self.k, Callable):
+            c_1 = (self.n(lmbd) + self.n_0) * (n_1 + self.n(lmbd))
+            c_2 = (self.n(lmbd) - self.n_0) * (n_1 - self.n(lmbd))
+            alpha = np.exp(-4 * np.pi * self.k(lmbd) * t / lmbd)
+            T_num = 16 * self.n(lmbd) ** 2 * self.n_0 * n_1 * alpha
+            T_denom = (
+                c_1**2
+                + c_2**2 * alpha**2
+                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
+            )
+        else:
+            c_1 = (self.n + self.n_0) * (n_1 + self.n)
+            c_2 = (self.n - self.n_0) * (n_1 - self.n)
+            # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
+            alpha = np.exp(-4 * np.pi * self.k * t / lmbd)
+            # Calcolo numeratore
+            T_num = 16 * self.n**2 * self.n_0 * n_1 * alpha
+            # Calcolo denominatore
             T_denom = (
                 c_1**2
                 + c_2**2 * alpha**2
@@ -209,7 +230,9 @@ def test():
 
     np.set_printoptions(precision=4)
 
-    df = pd.read_csv(r"/Users/margheritapolgati/lab_mat/data/9_05_spettrofotometro/ELAB/gold_glass_trasm_4_cm_1.csv")
+    df = pd.read_csv(
+        r"/Users/margheritapolgati/lab_mat/data/9_05_spettrofotometro/ELAB/gold_glass_trasm_4_cm_1.csv"
+    )
     johns = pd.read_csv(r"../data/book_data/Johnson.csv")
 
     df["lambda"] *= 1e-9
@@ -237,7 +260,6 @@ def test():
         df["lambda"], new_BL.beer_lambert(df["lambda"], popt), label=f"fit: {popt} m"
     )
     # plt.plot(df["lambda"], new_BL.beer_lambert(df["lambda"], 50e-9), label="hyp: 4 nm")
-
 
     plt.legend()
 
