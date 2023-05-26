@@ -290,18 +290,19 @@ def iterazione_spettro(path):
             )
 
 
-# Finalmente lanciamo la cazzo di funzione
-iterazione(dir)
 
-# SALVATAGGIO DATI BEER LAMBERT SU FILE
-res_df_beer_lambert = pd.DataFrame(data_Beer_Lambert)
-res_df_beer_lambert.to_csv("Risultati_Beer_Lambert_spettrofotometro.csv", index=False)
+if __name__ == "__main__":
+    # Finalmente lanciamo la cazzo di funzione
+    iterazione(dir)
+    # SALVATAGGIO DATI BEER LAMBERT SU FILE
+    res_df_beer_lambert = pd.DataFrame(data_Beer_Lambert)
+    res_df_beer_lambert.to_csv("Risultati_Beer_Lambert_spettrofotometro.csv", index=False)
 
-# SALVATAGGIO DATI TRANSMITTANCE SU FILE
-res_transmittance = pd.DataFrame(data_Transmittance)
-res_df_beer_lambert.to_csv("Risultati_Transmittance_spettrofotometro.csv", index=False)
+    # SALVATAGGIO DATI TRANSMITTANCE SU FILE
+    res_transmittance = pd.DataFrame(data_Transmittance)
+    res_df_beer_lambert.to_csv("Risultati_Transmittance_spettrofotometro.csv", index=False)
 
-res_transmittance_n_free = pd.DataFrame(data_Transmittance_n_free)
-res_transmittance_n_free.to_csv(
-    "Risultati_Transmittance_n_free_spettrofotometro.csv", index=False
-)
+    res_transmittance_n_free = pd.DataFrame(data_Transmittance_n_free)
+    res_transmittance_n_free.to_csv(
+        "Risultati_Transmittance_n_free_spettrofotometro.csv", index=False
+    )
