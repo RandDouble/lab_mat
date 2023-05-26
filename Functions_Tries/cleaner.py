@@ -45,7 +45,7 @@ def clean(
     # make operation
     data[new_col_name] = data[col_name] / zero[col_name]
     data["lambda"] *= 1e-9
-    data["trasm_error"] = data["polished"] * 0.3 / 100
+    data["trasm_error"] = data["polished"] * 0.6 / 100
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
