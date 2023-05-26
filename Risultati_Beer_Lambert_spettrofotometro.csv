@@ -1,30 +1,37 @@
 NomeFile,ValoreFit,ErrFit,χ_2_Rid,GdL
-data/2-05_spettrofotometro/ELAB/Oro-Oro 1.csv,4.2790442103558814e-08,1.328934611261174e-10,2008.6911911200507,3237
-data/2-05_spettrofotometro/ELAB/Oror-oro 4_1.csv,6.805607095915918e-08,1.9999448274001794e-10,4399.086236155669,3177
-data/2-05_spettrofotometro/ELAB/Oror-oro 3_1.csv,5.8366751620968376e-08,1.6244461549480106e-10,2996.851185395051,3186
-data/2-05_spettrofotometro/ELAB/Oror-oro 2_1.csv,4.8273502339369997e-08,1.472423214461589e-10,2501.980625138723,3162
-data/2-05_spettrofotometro/ELAB/Oror-oro 6_1.csv,1.0504125977806173e-07,4.849201126941158e-10,15865.953379332836,3168
-data/2-05_spettrofotometro/ELAB/Oror-oro 5_1.csv,9.859845283946389e-08,4.758503457686761e-10,15683.95098307202,3114
-data/5-05_spettrofotometro/vetrino3_spettrofotometro/ELAB/vetroAU-vetro_2_1.csv,3.528149286746026e-08,2.391935406429839e-10,6090.240675761529,3150
-data/5-05_spettrofotometro/vetrino3_spettrofotometro/ELAB/vetroAU-vetro_3_1.csv,6.336020784454081e-08,6.053547603292161e-11,412.72432676569554,3210
-data/5-05_spettrofotometro/vetrino3_spettrofotometro/ELAB/vetroAU-vetro_1_1.csv,2.0209089578334358e-08,2.0898284329790295e-10,4787.692008458651,3162
-data/5-05_spettrofotometro/vetrino2_spettrofotometro/ELAB/vetroAU-vetro_3_2.csv,6.716915067949818e-08,3.1019127160013505e-10,9101.601634203935,3087
-data/5-05_spettrofotometro/vetrino2_spettrofotometro/ELAB/vetroAU-vetro_2_2.csv,7.523143950952551e-08,1.808276185691246e-10,3667.3761139177104,3165
-data/5-05_spettrofotometro/vetrino2_spettrofotometro/ELAB/vetroAU-vetro_1_2.csv,6.365060957657016e-08,2.23303796840328e-09,29867.723260277147,1578
-data/5-05_spettrofotometro/vetrino2_spettrofotometro/ELAB/vetroAU-vetro_4_2.csv,5.078049055518067e-08,1.5946303186143577e-10,2827.867675404368,3252
-data/5-05_spettrofotometro/vetrino2_spettrofotometro/ELAB/vetroAU-vetro_5_2.csv,3.7941469818013786e-08,1.477174081539946e-10,2427.509659300063,3264
-data/5-05_spettrofotometro/vetrino1_spettrofotometro/ELAB/vetroAU-vetro_5_1.csv,3.7941469818013786e-08,1.477174081539946e-10,2427.509659300063,3264
-data/5-05_spettrofotometro/vetrino1_spettrofotometro/ELAB/vetroAU-vetro_2_1.csv,7.523143950952551e-08,1.808276185691246e-10,3667.3761139177104,3165
-data/5-05_spettrofotometro/vetrino1_spettrofotometro/ELAB/vetroAU-vetro_3_1.csv,6.716915067949818e-08,3.1019127160013505e-10,9101.601634203935,3087
-data/5-05_spettrofotometro/vetrino1_spettrofotometro/ELAB/vetroAU-vetro_1_1.csv,6.365060957657016e-08,2.23303796840328e-09,29867.723260277147,1578
-data/5-05_spettrofotometro/vetrino1_spettrofotometro/ELAB/vetroAU-vetro_4_1.csv,5.078049055518067e-08,1.5946303186143577e-10,2827.867675404368,3252
-data/9_05_spettrofotometro/ELAB/gold_glass_trasm_6_cm_1.csv,4.04617073800776e-08,1.498246659844592e-10,2470.4201514155457,3297
-data/9_05_spettrofotometro/ELAB/gold_glass_trasm_5_cm_1.csv,4.9137550535752464e-08,1.5622560198617982e-10,2686.8346135503275,3291
-data/9_05_spettrofotometro/ELAB/gold_glass_trasm_3_cm_1.csv,7.877769243529905e-08,2.2274906604034958e-10,5159.042113984718,3273
-data/9_05_spettrofotometro/ELAB/gold_glass_trasm_4_cm_1.csv,5.717533050276208e-08,1.7085332275168536e-10,3179.0133592922366,3297
-data/12-05_spettrofotometro/ELAB/AU-Vetro_4-cm_IV_1.csv,2.90504579220747e-08,3.320035967353742e-11,121.37857842977216,3303
-data/12-05_spettrofotometro/ELAB/AU-Vetro_1-cm_IV_1.csv,1.0178970253815337e-07,4.3219902528623346e-10,13987.273673234675,3168
-data/12-05_spettrofotometro/ELAB/AU-Vetro_6-cm_IV_1.csv,5.182911478657788e-08,1.5285885162264748e-10,2614.1869308072687,3261
-data/12-05_spettrofotometro/ELAB/AU-Vetro_7-cm_IV_1.csv,4.3207461556297235e-08,1.1042851293468267e-10,1379.4991703884218,3297
-data/12-05_spettrofotometro/ELAB/AU-Vetro_2-cm_IV_1.csv,7.996441229606953e-08,2.47118061010731e-10,6251.809956154273,3216
-data/12-05_spettrofotometro/ELAB/AU-Vetro_5-cm_IV_1.csv,5.009497618453099e-08,1.3962298826175613e-10,2195.973428202482,3267
+data\12-05_spettrofotometro\ELAB\AU-Vetro_1-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\12-05_spettrofotometro\ELAB\AU-Vetro_2-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\12-05_spettrofotometro\ELAB\AU-Vetro_4-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\12-05_spettrofotometro\ELAB\AU-Vetro_5-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\12-05_spettrofotometro\ELAB\AU-Vetro_6-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\12-05_spettrofotometro\ELAB\AU-Vetro_7-cm_IV_1.csv,6e-08,inf,27777.777777777777,3600
+data\2-05_spettrofotometro\ELAB\Oro-Oro 1.csv,6e-08,inf,27777.777777777777,3600
+data\2-05_spettrofotometro\ELAB\Oror-oro 2_1.csv,6e-08,inf,27777.777777777777,3600
+data\2-05_spettrofotometro\ELAB\Oror-oro 3_1.csv,6e-08,inf,27777.777777777777,3600
+data\2-05_spettrofotometro\ELAB\Oror-oro 4_1.csv,6e-08,inf,27777.777777777777,3600
+data\2-05_spettrofotometro\ELAB\Oror-oro 5_1.csv,6e-08,inf,27777.77777777778,3596
+data\2-05_spettrofotometro\ELAB\Oror-oro 6_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro2_Aria_1.csv,6e-08,inf,27777.77777777778,3600
+data\26-05_spettrofotometro\ELAB\Oro3_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro4_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro5_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro6_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro7b_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\26-05_spettrofotometro\ELAB\Oro7_Aria_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino1_spettrofotometro\ELAB\vetroAU-vetro_1_1.csv,6e-08,inf,27777.777777777777,1872
+data\5-05_spettrofotometro\vetrino1_spettrofotometro\ELAB\vetroAU-vetro_2_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino1_spettrofotometro\ELAB\vetroAU-vetro_3_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino1_spettrofotometro\ELAB\vetroAU-vetro_4_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino1_spettrofotometro\ELAB\vetroAU-vetro_5_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino2_spettrofotometro\ELAB\vetroAU-vetro_1_2.csv,6e-08,inf,27777.777777777777,1872
+data\5-05_spettrofotometro\vetrino2_spettrofotometro\ELAB\vetroAU-vetro_2_2.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino2_spettrofotometro\ELAB\vetroAU-vetro_3_2.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino2_spettrofotometro\ELAB\vetroAU-vetro_4_2.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino2_spettrofotometro\ELAB\vetroAU-vetro_5_2.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino3_spettrofotometro\ELAB\vetroAU-vetro_1_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino3_spettrofotometro\ELAB\vetroAU-vetro_2_1.csv,6e-08,inf,27777.777777777777,3600
+data\5-05_spettrofotometro\vetrino3_spettrofotometro\ELAB\vetroAU-vetro_3_1.csv,6e-08,inf,27777.777777777777,3600
+data\9_05_spettrofotometro\ELAB\gold_glass_trasm_3_cm_1.csv,6e-08,inf,27777.777777777777,3600
+data\9_05_spettrofotometro\ELAB\gold_glass_trasm_4_cm_1.csv,6e-08,inf,27777.777777777777,3600
+data\9_05_spettrofotometro\ELAB\gold_glass_trasm_5_cm_1.csv,6e-08,inf,27777.777777777777,3600
+data\9_05_spettrofotometro\ELAB\gold_glass_trasm_6_cm_1.csv,6e-08,inf,27777.777777777777,3600
