@@ -37,14 +37,15 @@ def clean(
     # Change to operating dir, in this way I can use only relative paths
     # os.chdir(dir_name)
     # Check if return adress exists, if not create it
-    if return_dir.is_dir() == False:
-        Path.mkdir(return_dir)
+    Path.mkdir(return_dir, parents=True, exist_ok=True)
+
     # read
     data = pd.read_table(path_data, **params_data)
     zero = pd.read_table(path_zero, **params_zero)
     # make operation
     data[new_col_name] = data[col_name] / zero[col_name]
-    data["lambda"]*=1e-9
+    data["lambda"] *= 1e-9
+    data["trasm_error"] = data["polished"] * 0.3 / 100
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
@@ -68,7 +69,7 @@ def clean_dir(
     """
     for obj in Path(path).iterdir():
         print(obj)
-        if obj.is_dir() == False and obj.stem != ".DS_Store":
+        if obj.is_dir() is False and obj.stem != ".DS_Store":
             clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
 
 

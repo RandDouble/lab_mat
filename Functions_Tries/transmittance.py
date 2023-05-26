@@ -1,8 +1,6 @@
 # %%
-
 import numpy as np
 from scipy.optimize import curve_fit
-
 from typing import Callable
 
 # se vedete le formule molto lunghe formattate in modo strano...
@@ -10,71 +8,6 @@ from typing import Callable
 # non ho disabilitato l'accorciamento automatico
 # Vorrei aggiungere che le colonne sono lunghe circa 90... Forse dovrei sul serio aumetare la lunghezza,
 # visto che arrivo sempre a circa 105 caratteri di lunghezza... O va be
-
-
-# def transmittance(lmbd, /, n: float | Callable, k: float | Callable, n_0, n_1, t):
-#     """
-#     Uso la formula indicata dalla Francesca nella sua ultima mail...
-#     Piano Piano la ottimizzo un po\' per l\'uso, intanto:
-#     - lmbd : lambda, la lunghezza d'onda della luce incidente
-#     - n    : parte reale dell'indice di rifrazione complesso del film sottile
-#     - k    : parte complessa dell'indice di rifrazione complesso del film sottile
-#     - n_1  : indice di rifrazione della superfice superiore al film sottile (aria)
-#     - n_2  : indice di rifrazione della superfice inferiore al film sottile (vetro)
-#     - t    : spessore del film sottile
-#     """
-#     # Controllo se in input n e k siano funzioni oppure siano dei valori...
-#     # se scopro che tutti usano almeno python 3.10 modifico i valori
-#     if isinstance(n, Callable) and isinstance(k, Callable):
-#         c_1 = (n(lmbd) + n_0)(n_1 + n(lmbd))
-#         c_2 = (n(lmbd) - n_0)(n_1 - n(lmbd))
-#         alpha = np.exp(-4 * np.pi * k(lmbd) * t / lmbd)
-#         T_num = 16 * n(lmbd) ** 2 * n_0 * n_1 * alpha
-#         T_denom = (
-#             c_1**2
-#             + c_2**2 * alpha**2
-#             + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * n(lmbd) * t / lmbd)
-#         )
-#     else:
-#         c_1 = (n + n_0)(n_1 + n)
-#         c_2 = (n - n_0)(n_1 - n)
-#         alpha = np.exp(-4 * np.pi * k * t / lmbd)
-#         T_num = 16 * n**2 * n_0 * n_1 * alpha
-#         T_denom = (
-#             c_1**2
-#             + c_2**2 * alpha**2
-#             + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * n * t / lmbd)
-#         )
-
-#     T = T_num / T_denom
-#     return T
-
-
-# def transmittane(lmbd, eta: Callable | complex, n_0, n_1, t):
-#     """
-#     versione di tranmittance che usa eta complesso,
-#     invece che l'indice di rifrazione diviso nelle sue componenti
-#     """
-
-#     if isinstance(eta, Callable):
-#         n = eta(lmbd).real()
-#         k = -eta(lmbd).imag()
-#     else:
-#         n = eta.real()
-#         k = -eta.imag()
-#     transmittance(lmbd=lmbd, n=n, k=k, n_0=n_0, n_1=n_1, t=t)
-
-
-# def Beer_Lambert(lmbd: float | np.ndarray,/, k: Callable | np.ndarray, t: float):
-#     """
-#     - lmbd : lunghezza d'onda incidente
-#     - t    : spessore ipotizzato
-#     - k    : coefficente di assorbimento, può essere una funzione o un numero
-#     """
-#     if isinstance(k, Callable):
-#         return np.exp(-4 * np.pi * k(lmbd) * t / lmbd)
-#     else:
-#         return np.exp(-4 * np.pi * k * t / lmbd)
 
 
 # Nuova sezione, mi sono visto alcuni problemi nell'implementazione del curve fit, la roba più semplice che mi è venuta in mente
@@ -107,7 +40,7 @@ class Transmittance:
     def beer_lambert(
         self,  # La classe stessa
         lmbd: float | np.ndarray,  # La lunghezza d'onda incledente
-        t: float  # Lo spessore da fittare
+        t: float,  # Lo spessore da fittare
     ) -> float | np.ndarray:
         """
         Calcola mediante la formula di Beer Lambert
@@ -121,14 +54,14 @@ class Transmittance:
         if isinstance(self.k, Callable):
             # print("Calling with k function")
             return np.exp(-4.0 * np.pi * self.k(lmbd) * t / lmbd)
-        else:
+        elif isinstance(self.k, float):
             # print("Calling with k scalar")
             return np.exp(-4.0 * np.pi * self.k * t / lmbd)
+        else:
+            raise TypeError
 
     def transmittance(
-        self,  # La classe stessa
-        lmbd,  # La lunghezza d'onda
-        t  # Spessore
+        self, lmbd, t  # La classe stessa  # La lunghezza d'onda  # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -150,7 +83,7 @@ class Transmittance:
                 + c_2**2 * alpha**2
                 + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
             )
-        else:
+        elif isinstance(self.n, float) and isinstance(self.n, float):
             c_1 = (self.n + self.n_0) * (self.n_1 + self.n)
             c_2 = (self.n - self.n_0) * (self.n_1 - self.n)
             # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
@@ -163,6 +96,9 @@ class Transmittance:
                 + c_2**2 * alpha**2
                 + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n * t / lmbd)
             )
+        else:
+            raise TypeError
+
         T = T_num / T_denom
         return T
 
@@ -170,7 +106,7 @@ class Transmittance:
         self,  # La classe stessa
         lmbd,  # La lunghezza d'onda
         n_1,  # Indice di rifrazione del primo materiale (Vetro)
-        t  # Spessore
+        t,  # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -180,8 +116,7 @@ class Transmittance:
         - k    : parte complessa dell'indice di rifrazione complesso del film sottile
         - t    : spessore del film sottile
         """
-        # Controllo se in input n e k siano funzioni oppure siano dei valori...
-        # se scopro che tutti usano almeno python 3.10 modifico i valori
+
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
             c_1 = (self.n(lmbd) + self.n_0) * (n_1 + self.n(lmbd))
             c_2 = (self.n(lmbd) - self.n_0) * (n_1 - self.n(lmbd))
@@ -192,7 +127,7 @@ class Transmittance:
                 + c_2**2 * alpha**2
                 + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
             )
-        else:
+        elif isinstance(self.n, float) and isinstance(self.n, float):
             c_1 = (self.n + self.n_0) * (n_1 + self.n)
             c_2 = (self.n - self.n_0) * (n_1 - self.n)
             # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
@@ -205,6 +140,10 @@ class Transmittance:
                 + c_2**2 * alpha**2
                 + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n * t / lmbd)
             )
+        else:
+            print("n and k have incompatible types, Raise Error")
+            raise TypeError
+
         T = T_num / T_denom
         return T
 
