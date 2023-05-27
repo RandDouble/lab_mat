@@ -1,15 +1,13 @@
 # %%
 import matplotlib.pyplot as plt
-from scipy.interpolate import CubicSpline
 from scipy.optimize import curve_fit
 import pandas as pd
 import numpy as np
-from Functions_Tries.transmittance import Transmittance
 from pathlib import Path
 from typing import Callable
+from collections.abc import Iterable
 
-
-plt.style.use("seaborn")
+plt.style.use("seaborn-v0_8")
 
 # # Il codice seguente serve al fit dello spessore dagli spettri ottenuti dallo spettrofotometro
 #
@@ -21,49 +19,17 @@ plt.style.use("seaborn")
 # - Usiamo il modulo ```pathlib``` per gestire i Path dei vari file in maniera automatizzata
 # - Usiamo la libreria ```matplotlib``` per graficare gli spettri
 
-# Imposto la precisione per l'output dei numeri
-np.set_printoptions(precision=2)
-
-# Path entro cui fare le ricerche
-dir = Path("./data/")
-
-# Nome colonne for pretty printing
-colonne = ["NomeFile", "ValoreFit", "ErrFit", "χ_2_Rid", "GdL"]
-
-# Liste vuote, servono per salvare i vari dati del fit
-data_Beer_Lambert = dict(NomeFile=[], ValoreFit=[], ErrFit=[], χ_2_Rid=[], GdL=[])
-
-data_Transmittance = dict(NomeFile=[], ValoreFit=[], ErrFit=[], χ_2_Rid=[], GdL=[])
-
-data_Transmittance_n_free = dict(
-    NomeFile=[], ValoreFit=[], ErrFit=[], n_obt=[], err_n=[], χ_2_Rid=[], GdL=[]
-)
-
-
-# leggo dati del johnny
-john = pd.read_csv("./data/book_data/Johnson.csv")
-n_spl_john = CubicSpline(john["wl"], john["n"])
-k_spl_john = CubicSpline(john["wl"], john["k"])
-
-# Inizializziamo la classe che contiene le transmittance per i successivi fit
-Trans = Transmittance(
-    n=n_spl_john,
-    # n=1,
-    k=k_spl_john,
-    n_0=1.0,
-    n_1=1.52,
-)
-
 
 # Funzione che va a fare i fit in maniera automatica a partire dai dati ottenuti per beer lambert...
 def general_optimizer(
     path: Path,
+    fit_func: Callable,
+    p0: float | Iterable,
     dest_name=None,
-    fit_func: Callable = Trans.beer_lambert,
-    wavelen_bound: tuple | list = (300e-9, 800e-9),
-    y_bound: tuple | list = (0.0, 1.0),
+    wavelen_bound: Iterable = (300e-9, 800e-9),
+    y_bound: Iterable = (0.0, 1.0),
     graph_title: str = "",
-):
+) -> tuple:
     """
     Funzione che va a fare i fit in maniera automatica, indipendentemente dalla funzione in ingresso
     Input Parameters:
@@ -80,7 +46,7 @@ def general_optimizer(
     # Ci sono capitati dati uguali a zero... questi creano problemi, via dal dataframe
     # Revisione successiva introduce delle condizioni più strette... I dati che si possono usare sono quelli che
     # sono maggiori di 0 e minori di 1... Le altre condizioni sono solo spiacevoli infortuni.
-    df_clean = df(df["polished"] > y_bound[0] & (df["polished"] < y_bound[1]))
+    df_clean = df[(df["polished"] > y_bound[0]) & (df["polished"] < y_bound[1])]
 
     # Filtro per le lunghezze d'onda
     filter_λ = (df_clean["lambda"] > wavelen_bound[0]) & (
@@ -92,22 +58,18 @@ def general_optimizer(
         fit_func,
         df_clean[filter_λ]["lambda"],
         df_clean[filter_λ]["polished"],
-        p0=60e-9,
+        p0=p0,
         sigma=df_clean[filter_λ]["trasm_error"],
     )
 
+    # Calcolo errore
+    err = np.sqrt(np.diag(pcov))
     # Calcolo del Chi quadro... Potrebbe essere inserito nel grafico, ma non ho voglia
-    chisq_rid = (
-        np.sum(
-            (
-                df_clean[filter_λ]["polished"]
-                - fit_func(df_clean[filter_λ]["lambda"], *popt)
-            )
-            ** 2
-            / df_clean[filter_λ]["trasm_error"]**2
-        )
-        / df_clean[filter_λ].size
-    )
+    chisq_rid = np.sum(
+        (df_clean[filter_λ]["polished"] - fit_func(df_clean[filter_λ]["lambda"], *popt))
+        ** 2
+        / df_clean[filter_λ]["trasm_error"] ** 2
+    ) / len(df_clean[filter_λ])
 
     # Grafichiamo... Innanzitutto controlliamo se c'è la directory dove buttare fuori i dati
     # Se non ci fosse la creiamo, ho recentemente scoperto che si può fare tutto in un solo comando
@@ -139,19 +101,38 @@ def general_optimizer(
         ax.plot(
             df_clean[filter_λ]["lambda"] * 1e9,
             fit_func(df_clean[filter_λ]["lambda"], *popt),
-            label=f"fit : {popt*1e9} nm",
+            label=f"fit : {popt[0]*1e9} nm",
+            color="b",
+        )
+        # Voglio delle barre d'errore fighe
+        ax.fill_between(
+            df_clean[filter_λ]["lambda"] * 1e9,
+            y1=fit_func(df_clean[filter_λ]["lambda"], *(popt + err)),
+            y2=fit_func(df_clean[filter_λ]["lambda"], *(popt - err)),
+            color="b",
+            alpha=0.5,
         )
     else:
         ax.plot(
             df_clean[filter_λ]["lambda"] * 1e9,
             fit_func(df_clean[filter_λ]["lambda"], *popt),
-            label=f"fit : {popt[0]*1e9} nm\nn_1 : {popt[1]}",
+            label=f"fit : {popt[0]*1e9} nm\n$n_1$ : {popt[1]}",
+            color="b",
+        )
+        ax.fill_between(
+            df_clean[filter_λ]["lambda"] * 1e9,
+            y1=fit_func(df_clean[filter_λ]["lambda"], *(popt + err)),
+            y2=fit_func(df_clean[filter_λ]["lambda"], *(popt - err)),
+            color="b",
         )
 
     # Plotto gli scarti (y - f(x)), chiesto dalla Fra
     ax.plot(
         df_clean[filter_λ]["lambda"] * 1e9,
-        np.abs(fit_func(df_clean[filter_λ]["lambda"]) - df_clean[filter_λ]["polished"]),
+        np.abs(
+            fit_func(df_clean[filter_λ]["lambda"], *popt)
+            - df_clean[filter_λ]["polished"]
+        ),
         "r--",
         label="residues",
     )
@@ -163,8 +144,8 @@ def general_optimizer(
     ax.legend()
 
     # Salviamo l'immagine, sia in formato svg che in formato pdf...
-    for sur in (".svg", ".pdf", ".png"):
-        fig.savefig(dest / path.with_suffix(sur).name, format=sur)
+    for sur in ("svg", "pdf", "png"):
+        fig.savefig(dest / path.with_suffix("." + sur).name, format=sur)
 
     # Per qualche motivo non resetta i canvas... lo forziamo a pulirsi
     plt.clf()
@@ -173,22 +154,22 @@ def general_optimizer(
 
     # Riportiamo finalmente i risulati, in ordine sono il parametro ottimizzato, il suo errore,
     # il chi quadro ridotto, i gradi di libertà
-    return popt, np.sqrt(np.diag(pcov)), chisq_rid, df_clean[filter_λ].size
+    return popt, err, chisq_rid, len(df_clean[filter_λ])
 
 
 # Funzione per salvare dati, in questo modo non dobbiamo ogni volta riscrivere lo stesso codice 2 volte
-def saving_res(file, data: dict, fit_func: Callable, i=None, **kwargs):
+def saving_res(file, data: dict, fit_func: Callable, i=None, **kwargs) -> None:
     # Ottengo i risultati dell'ottimizzatore e li carico in un Liste a parte
     if i is None:
         res = general_optimizer(file, fit_func=fit_func, **kwargs)
     else:
         # Questo lo uso quando capita iteratore_spettro... che è un filo più rompiballe
         res = general_optimizer(
-            file, [i.parts[-3], i.parts[-2]], fit_func=fit_func, **kwargs
+            file, dest_name=[i.parts[-3], i.parts[-2]], fit_func=fit_func, **kwargs
         )
 
     # SALVATAGGIO DATI
-    match len(data.keys):
+    match len(data):
         case 5:
             data["NomeFile"].append(file)
             data["ValoreFit"].append(
@@ -214,13 +195,13 @@ def saving_res(file, data: dict, fit_func: Callable, i=None, **kwargs):
 
 
 # Funzione che itera su tutti i file contenuti nella cartella "./data"
-def iterazione(path):
+def iterazione(path: Path, data_save: dict, fit_func: Callable, **kwargs) -> None:
     # Ci interessano solo le cartelle che contengono la parola spettrofotometro
-    data = [
+    data_dir = [
         i for i in path.iterdir() if i.match("*spettrofotometro")
     ]  # purtroppo per filtrare non abbiamo ancora scoperto un modo migliore...
     # Così non posso sfruttare i vantaggi dei generatori
-    for i in data:
+    for i in data_dir:
         # Itero solo sulle sottocartelle e non su file che sono in giro
         subfolder = [j for j in i.iterdir() if j.is_dir()]
         for folder in subfolder:
@@ -235,74 +216,101 @@ def iterazione(path):
                         continue
                     saving_res(
                         file,
-                        data_Beer_Lambert,
-                        fit_func=Trans.beer_lambert,
-                        graph_title="Fit Beer Lambert",
-                    )
-                    saving_res(
-                        file,
-                        data_Transmittance,
-                        fit_func=Trans.transmittance,
-                        graph_title="Fit Transmittance",
-                    )
-                    saving_res(
-                        file,
-                        data_Transmittance_n_free,
-                        fit_func=Trans.transmittance_n_free,
-                        graph_title="Fit Transmittance, n fitted",
+                        data=data_save,
+                        fit_func=fit_func,
+                        **kwargs,
                     )
             else:
                 # Ci sono cartelle che contengono spettrofotometro... Ma hanno sottocartelle sottostanti
                 # print("La cartella non è Elab... gestiamo logica dopo")
                 # print(folder)
-                iterazione_spettro(folder)
+                iterazione_spettro(folder, data_save, fit_func, **kwargs)
 
 
 # In alcuni casi non si trova subito la cartella "ELAB", in quei casi bisogna scendere ancora di un livello
-def iterazione_spettro(path):
-    # print("launching iterazione_spettro")
-    # print(path)
+def iterazione_spettro(
+    path: Path,
+    data: dict,
+    fit_func: Callable,
+    **kwargs,
+) -> None:
     elab = [i for i in path.iterdir() if i.match("ELAB")]
-    # print(elab)
     for i in elab:
         for file in i.iterdir():
-            if file.match("*.png"):
+            if (
+                file.match("*.png")
+                or file.match("Aria*")
+                or file.match("aria*")
+                or file.match("air*")
+            ):
                 continue
-            if file.match("Aria*") or file.match("aria*") or file.match("air*"):
-                continue
-            saving_res(
-                file,
-                data_Beer_Lambert,
-                fit_func=Trans.beer_lambert,
-                graph_title="Fit Beer Lambert",
-            )
-            saving_res(
-                file,
-                data_Transmittance,
-                fit_func=Trans.transmittance,
-                graph_title="Fit Transmittance",
-            )
-            saving_res(
-                file,
-                data_Transmittance_n_free,
-                fit_func=Trans.transmittance_n_free,
-                graph_title="Fit Transmittance, n fitted",
-            )
+            saving_res(file, fit_func=fit_func, data=data, **kwargs)
 
 
+if __name__ == "__main__":    
+    from scipy.interpolate import CubicSpline
+    from transmittance import Transmittance
 
-if __name__ == "__main__":
+    # Imposto la precisione per l'output dei numeri
+    np.set_printoptions(precision=2)
+
+    # Path entro cui fare le ricerche
+    dir = Path("./data/")
+
+    # Liste vuote, servono per salvare i vari dati del fit
+    data_Beer_Lambert = dict(NomeFile=[], ValoreFit=[], ErrFit=[], χ_2_Rid=[], GdL=[])
+
+    data_Transmittance = dict(NomeFile=[], ValoreFit=[], ErrFit=[], χ_2_Rid=[], GdL=[])
+
+    data_Transmittance_n_free = dict(
+        NomeFile=[], ValoreFit=[], ErrFit=[], n_obt=[], err_n=[], χ_2_Rid=[], GdL=[]
+    )
+
+    # leggo dati del johnny
+    john = pd.read_csv("./data/book_data/Johnson.csv")
+    n_spl_john = CubicSpline(john["wl"], john["n"])
+    k_spl_john = CubicSpline(john["wl"], john["k"])
+
+    # Inizializziamo la classe che contiene le transmittance per i successivi fit
+    Trans = Transmittance(
+        n=n_spl_john,
+        k=k_spl_john,
+        n_0=1.0,
+        n_1=1.52,
+    )
+
     # Finalmente lanciamo la cazzo di funzione
-    iterazione(dir)
+    iterazione(
+        dir,
+        data_Beer_Lambert,
+        Trans.beer_lambert,
+        graph_title="Fit Beer Lambert",
+        p0=60e-9,
+    )
+    iterazione(
+        dir,
+        data_Transmittance,
+        Trans.transmittance,
+        graph_title="Fit Transmitance",
+        p0=60e-9,
+    )
+    iterazione(
+        dir,
+        data_Transmittance_n_free,
+        Trans.transmittance_n_free,
+        graph_title="Fit Transmittance, $n_1$ free",
+        p0=(1.52, 60e-9),
+    )
     # SALVATAGGIO DATI BEER LAMBERT SU FILE
     res_df_beer_lambert = pd.DataFrame(data_Beer_Lambert)
-    res_df_beer_lambert.to_csv("Risultati_Beer_Lambert_spettrofotometro.csv", index=False)
-
-    # SALVATAGGIO DATI TRANSMITTANCE SU FILE
-    res_transmittance = pd.DataFrame(data_Transmittance)
-    res_df_beer_lambert.to_csv("Risultati_Transmittance_spettrofotometro.csv", index=False)
-
-    res_transmittance_n_free = pd.DataFrame(data_Transmittance_n_free)
-    res_transmittance_n_free.to_csv(
-        "Risultati_Transmittance_n_free_spettrofotometro.csv", index=False
+    res_df_beer_lambert.to_csv(
+        "Risultati_Beer_Lambert_spettrofotometro_1.csv", index=False
+    )
+    res_df_beer_lambert = pd.DataFrame(data_Transmittance)
+    res_df_beer_lambert.to_csv(
+        "Risultati_Transmittance_spettrofotometro_1.csv", index=False
+    )
+    res_df_beer_lambert = pd.DataFrame(data_Transmittance_n_free)
+    res_df_beer_lambert.to_csv(
+        "Risultati_Transmittance_n_free_spettrofotometro_1.csv", index=False
     )

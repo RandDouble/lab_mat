@@ -23,7 +23,7 @@ class Transmittance:
     La riscrittura si è resa necessaria per semplificare alcuni problemi avuti con il fitting dei parametri.
     """
 
-    def __init__(self, n=None, k=None, n_0=None, n_1=None) -> None:
+    def __init__(self, n=None, k=None, n_0=1., n_1=1.52) -> None:
         """
         Parametri iniziali da fornire alla classe perchè questa possa funzionare
         - n    : Indice di rifrazione del materiale da analizzare
@@ -40,7 +40,7 @@ class Transmittance:
     def beer_lambert(
         self,  # La classe stessa
         lmbd: float | np.ndarray,  # La lunghezza d'onda incledente
-        t: float,  # Lo spessore da fittare
+        t: float  # Lo spessore da fittare
     ) -> float | np.ndarray:
         """
         Calcola mediante la formula di Beer Lambert
@@ -52,7 +52,6 @@ class Transmittance:
         - k    : coefficente di assorbimento, può essere una funzione o un numero, è un parametro della classe stessa
         """
         if isinstance(self.k, Callable):
-            # print("Calling with k function")
             return np.exp(-4.0 * np.pi * self.k(lmbd) * t / lmbd)
         elif isinstance(self.k, float):
             # print("Calling with k scalar")
@@ -61,7 +60,9 @@ class Transmittance:
             raise TypeError
 
     def transmittance(
-        self, lmbd, t  # La classe stessa  # La lunghezza d'onda  # Spessore
+        self,  # La classe stessa
+        lmbd: float | np.ndarray,  # La lunghezza d'onda
+        t: float      # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -72,7 +73,6 @@ class Transmittance:
         - t    : spessore del film sottile
         """
         # Controllo se in input n e k siano funzioni oppure siano dei valori...
-        # se scopro che tutti usano almeno python 3.10 modifico i valori
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
             c_1 = (self.n(lmbd) + self.n_0) * (self.n_1 + self.n(lmbd))
             c_2 = (self.n(lmbd) - self.n_0) * (self.n_1 - self.n(lmbd))
@@ -106,7 +106,7 @@ class Transmittance:
         self,  # La classe stessa
         lmbd,  # La lunghezza d'onda
         n_1,  # Indice di rifrazione del primo materiale (Vetro)
-        t,  # Spessore
+        t  # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -120,8 +120,11 @@ class Transmittance:
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
             c_1 = (self.n(lmbd) + self.n_0) * (n_1 + self.n(lmbd))
             c_2 = (self.n(lmbd) - self.n_0) * (n_1 - self.n(lmbd))
+            # Calcolo coefficente alpha, è la vecchia beer lambert
             alpha = np.exp(-4 * np.pi * self.k(lmbd) * t / lmbd)
+            # Calcolo numeratore
             T_num = 16 * self.n(lmbd) ** 2 * self.n_0 * n_1 * alpha
+            # Calcolo denominatore
             T_denom = (
                 c_1**2
                 + c_2**2 * alpha**2
@@ -145,12 +148,14 @@ class Transmittance:
             raise TypeError
 
         T = T_num / T_denom
+
         return T
 
     def transmittance_complex(self, lmbd, eta: Callable | complex, n_0, n_1, t):
         """
         versione di tranmittance che usa eta complesso,
         invece che l'indice di rifrazione diviso nelle sue componenti
+        Si potrebbe eliminare...
         """
         if isinstance(eta, Callable):
             n = eta(lmbd).real()
