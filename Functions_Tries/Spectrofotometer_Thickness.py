@@ -1,4 +1,3 @@
-# %%
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 import pandas as pd
@@ -6,8 +5,7 @@ import numpy as np
 from pathlib import Path
 from typing import Callable
 from collections.abc import Iterable
-
-plt.style.use("seaborn-v0_8")
+# import asyncio
 
 # # Il codice seguente serve al fit dello spessore dagli spettri ottenuti dallo spettrofotometro
 #
@@ -29,6 +27,7 @@ def general_optimizer(
     wavelen_bound: Iterable = (300e-9, 800e-9),
     y_bound: Iterable = (0.0, 1.0),
     graph_title: str = "",
+    graph_dir: str | Path = "./images",
 ) -> tuple:
     """
     Funzione che va a fare i fit in maniera automatica, indipendentemente dalla funzione in ingresso
@@ -43,44 +42,41 @@ def general_optimizer(
 
     # Leggiamo i dati
     df = pd.read_csv(path)
+    # Filtro per le lunghezze d'onda
+    filter_λ = (df["lambda"] > wavelen_bound[0]) & (
+        df["lambda"] < wavelen_bound[1]
+    )
     # Ci sono capitati dati uguali a zero... questi creano problemi, via dal dataframe
     # Revisione successiva introduce delle condizioni più strette... I dati che si possono usare sono quelli che
     # sono maggiori di 0 e minori di 1... Le altre condizioni sono solo spiacevoli infortuni.
-    df_clean = df[(df["polished"] > y_bound[0]) & (df["polished"] < y_bound[1])]
-
-    # Filtro per le lunghezze d'onda
-    filter_λ = (df_clean["lambda"] > wavelen_bound[0]) & (
-        df_clean["lambda"] < wavelen_bound[1]
-    )
+    df_clean = df[filter_λ & (df["polished"] > y_bound[0]) & (df["polished"] < y_bound[1])]
 
     # Calcoliamo lo spessore e il suo errore
     popt, pcov = curve_fit(
         fit_func,
-        df_clean[filter_λ]["lambda"],
-        df_clean[filter_λ]["polished"],
+        df_clean["lambda"],
+        df_clean["polished"],
         p0=p0,
-        sigma=df_clean[filter_λ]["trasm_error"],
+        sigma=df_clean["trasm_error"],
     )
 
     # Calcolo errore
     err = np.sqrt(np.diag(pcov))
     # Calcolo del Chi quadro... Potrebbe essere inserito nel grafico, ma non ho voglia
     chisq_rid = np.sum(
-        (df_clean[filter_λ]["polished"] - fit_func(df_clean[filter_λ]["lambda"], *popt))
+        (df_clean["polished"] - fit_func(df_clean["lambda"], *popt))
         ** 2
-        / df_clean[filter_λ]["trasm_error"] ** 2
-    ) / len(df_clean[filter_λ])
+        / df_clean["trasm_error"] ** 2
+    ) / len(df_clean)
 
     # Grafichiamo... Innanzitutto controlliamo se c'è la directory dove buttare fuori i dati
     # Se non ci fosse la creiamo, ho recentemente scoperto che si può fare tutto in un solo comando
     if dest_name is None:
-        dest = Path("./images/beer_lambert/" + path.parent.parts[-2])
+        dest = Path(graph_dir + path.parent.parts[-2])
         dest.mkdir(parents=True, exist_ok=True)
     # questo serve solo nel caso in cui sia lanciato iteratore_spettro() per cui dest_name non è nullo
     else:
-        dest = Path("./images/beer_lambert/").joinpath(
-            dest_name[0] + "/" + dest_name[1]
-        )
+        dest = Path(graph_dir).joinpath(dest_name[0] + "/" + dest_name[1])
         # Quello che è contenuto in join path serve ad aggiugnere *_spettrofotometro/vetrino_*
         # Nella mia stanchezza non mi è venuto in mente niente di meglio...
         dest.mkdir(parents=True, exist_ok=True)
@@ -90,48 +86,55 @@ def general_optimizer(
     # Aggiungiamo i dati, ho riscalato le misure per avere sull'asse x dei nm e non dei metri illeggibili
     # Dati originali
     ax.plot(
-        df_clean[filter_λ]["lambda"] * 1e9,
-        df_clean[filter_λ]["polished"],
-        "go",
+        df_clean["lambda"] * 1e9,
+        df_clean["polished"],
+        "g.",
         label="original data",
+    )
+    ax.fill_between(
+        df_clean["lambda"] * 1e9,
+        df_clean["polished"] + df_clean["trasm_error"],
+        df_clean["polished"] - df_clean["trasm_error"],
+        color="g",
+        alpha=0.5,
     )
 
     # La funzione fittata
     if len(popt) == 1:
         ax.plot(
-            df_clean[filter_λ]["lambda"] * 1e9,
-            fit_func(df_clean[filter_λ]["lambda"], *popt),
-            label=f"fit : {popt[0]*1e9} nm",
+            df_clean["lambda"] * 1e9,
+            fit_func(df_clean["lambda"], *popt),
+            label=f"fit : {popt[0]*1e9:.2f} nm",
             color="b",
         )
         # Voglio delle barre d'errore fighe
         ax.fill_between(
-            df_clean[filter_λ]["lambda"] * 1e9,
-            y1=fit_func(df_clean[filter_λ]["lambda"], *(popt + err)),
-            y2=fit_func(df_clean[filter_λ]["lambda"], *(popt - err)),
+            df_clean["lambda"] * 1e9,
+            y1=fit_func(df_clean["lambda"], *(popt + err)),
+            y2=fit_func(df_clean["lambda"], *(popt - err)),
             color="b",
             alpha=0.5,
         )
     else:
         ax.plot(
-            df_clean[filter_λ]["lambda"] * 1e9,
-            fit_func(df_clean[filter_λ]["lambda"], *popt),
-            label=f"fit : {popt[0]*1e9} nm\n$n_1$ : {popt[1]}",
+            df_clean["lambda"] * 1e9,
+            fit_func(df_clean["lambda"], *popt),
+            label=f"fit : {popt[0]*1e9:.2f} nm\n$n_1$ : {popt[1]:.2f}",
             color="b",
         )
         ax.fill_between(
-            df_clean[filter_λ]["lambda"] * 1e9,
-            y1=fit_func(df_clean[filter_λ]["lambda"], *(popt + err)),
-            y2=fit_func(df_clean[filter_λ]["lambda"], *(popt - err)),
+            df_clean["lambda"] * 1e9,
+            y1=fit_func(df_clean["lambda"], *(popt + err)),
+            y2=fit_func(df_clean["lambda"], *(popt - err)),
             color="b",
         )
 
     # Plotto gli scarti (y - f(x)), chiesto dalla Fra
     ax.plot(
-        df_clean[filter_λ]["lambda"] * 1e9,
+        df_clean["lambda"] * 1e9,
         np.abs(
-            fit_func(df_clean[filter_λ]["lambda"], *popt)
-            - df_clean[filter_λ]["polished"]
+            fit_func(df_clean["lambda"], *popt)
+            - df_clean["polished"]
         ),
         "r--",
         label="residues",
@@ -154,7 +157,7 @@ def general_optimizer(
 
     # Riportiamo finalmente i risulati, in ordine sono il parametro ottimizzato, il suo errore,
     # il chi quadro ridotto, i gradi di libertà
-    return popt, err, chisq_rid, len(df_clean[filter_λ])
+    return popt, err, chisq_rid, len(df_clean)
 
 
 # Funzione per salvare dati, in questo modo non dobbiamo ogni volta riscrivere lo stesso codice 2 volte
@@ -244,10 +247,10 @@ def iterazione_spettro(
                 or file.match("air*")
             ):
                 continue
-            saving_res(file, fit_func=fit_func, data=data, **kwargs)
+            saving_res(file, fit_func=fit_func, data=data, i=i, **kwargs)
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     from scipy.interpolate import CubicSpline
     from transmittance import Transmittance
 

@@ -46,6 +46,7 @@ def clean(
     data[new_col_name] = data[col_name] / zero[col_name]
     data["lambda"] *= 1e-9
     data["trasm_error"] = data["polished"] * 0.6 / 100
+    # data["trasm_error"] = 0.6 / 100
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
@@ -73,19 +74,3 @@ def clean_dir(
             clean(obj, path_zero, params_data, params_zero, col_name, new_col_name)
 
 
-# %%
-# kwords = {
-#     'skiprows' : 75,
-#     'names' : ("lambda", "transmittance")
-# }
-
-# clean_dir("./data/21-04", "data/21-04/Aria-Aria-900-350.txt", params_data=kwords, params_zero=kwords)
-
-
-# if __name__=="__main__":
-#     n = int(input('How many file do you want to clean?'))
-
-#     if n > 1:
-#         path_data = input("path to data")
-#         path_zero = input('Path to file to use as zero')
-#         names = input("list of names to give to columns")
