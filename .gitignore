@@ -8,3 +8,5 @@ move_file.py
 *.xlsx
 pyproject.toml
 *.DS_Store
+performance.ipynb
+/images_prof
