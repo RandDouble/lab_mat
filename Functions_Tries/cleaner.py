@@ -50,7 +50,8 @@ def clean(
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
-
+#questo prende in input la cartella e usa clean() per 
+#pulire tutti i dati presenti nella cartella di input
 def clean_dir(
     path: str | Path,
     path_zero: str | Path,
