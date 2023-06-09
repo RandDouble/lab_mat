@@ -23,7 +23,7 @@ class Transmittance:
     La riscrittura si è resa necessaria per semplificare alcuni problemi avuti con il fitting dei parametri.
     """
 
-    def __init__(self, n=None, k=None, n_0=1., n_1=1.52) -> None:
+    def __init__(self, n=None, k=None, n_0=1.0, n_1=1.52) -> None:
         """
         Parametri iniziali da fornire alla classe perchè questa possa funzionare
         - n    : Indice di rifrazione del materiale da analizzare
@@ -40,7 +40,7 @@ class Transmittance:
     def beer_lambert(
         self,  # La classe stessa
         lmbd: float | np.ndarray,  # La lunghezza d'onda incledente
-        t: float  # Lo spessore da fittare
+        t: float,  # Lo spessore da fittare
     ) -> float | np.ndarray:
         """
         Calcola mediante la formula di Beer Lambert
@@ -59,13 +59,13 @@ class Transmittance:
         else:
             raise TypeError
 
-    def transmittance(
+    def transmittance_approx(
         self,  # La classe stessa
         lmbd: float | np.ndarray,  # La lunghezza d'onda
-        t: float      # Spessore
+        t: float,  # Spessore
     ) -> float | np.ndarray:
         """
-        Uso la formula indicata dalla Francesca nella sua ultima mail...
+        Uso la formula indicata dalla Francesca nella sua ultima mail... Attenzione vale solo in alcune condizioni
         Piano Piano la ottimizzo un po\' per l\'uso, intanto:
         - lmbd : lambda, la lunghezza d'onda della luce incidente
         - n    : parte reale dell'indice di rifrazione complesso del film sottile
@@ -74,39 +74,33 @@ class Transmittance:
         """
         # Controllo se in input n e k siano funzioni oppure siano dei valori...
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
-            c_1 = (self.n(lmbd) + self.n_0) * (self.n_1 + self.n(lmbd))
-            c_2 = (self.n(lmbd) - self.n_0) * (self.n_1 - self.n(lmbd))
-            alpha = np.exp(-4 * np.pi * self.k(lmbd) * t / lmbd)
-            T_num = 16 * self.n(lmbd) ** 2 * self.n_0 * self.n_1 * alpha
-            T_denom = (
-                c_1**2
-                + c_2**2 * alpha**2
-                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
-            )
+            n = self.n(lmbd)
+            k = self.k(lmbd)
         elif isinstance(self.n, float) and isinstance(self.n, float):
-            c_1 = (self.n + self.n_0) * (self.n_1 + self.n)
-            c_2 = (self.n - self.n_0) * (self.n_1 - self.n)
-            # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
-            alpha = np.exp(-4 * np.pi * self.k * t / lmbd)
-            # Calcolo numeratore
-            T_num = 16 * self.n**2 * self.n_0 * self.n_1 * alpha
-            # Calcolo denominatore
-            T_denom = (
-                c_1**2
-                + c_2**2 * alpha**2
-                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n * t / lmbd)
-            )
+            n = self.n
+            k = self.k
         else:
             raise TypeError
 
+        c_1 = (n + self.n_0) * (self.n_1 + n)
+        c_2 = (n - self.n_0) * (self.n_1 - n)
+        # Calcolo coefficente alpha, è la vecchia beer lambert
+        alpha = np.exp(-4.0 * np.pi * k * t / lmbd)
+        beta = 4.0 * np.pi * n * t / lmbd
+        # Calcolo numeratore
+        T_num = 16.0 * n**2 * self.n_0 * self.n_1 * alpha
+        # Calcolo denominatore
+        T_denom = (
+            c_1**2 + c_2**2 * alpha**2 + 2 * c_1 * c_2 * alpha * np.cos(beta)
+        )
         T = T_num / T_denom
         return T
 
-    def transmittance_n_free(
+    def transmittance_approx_n_free(
         self,  # La classe stessa
         lmbd,  # La lunghezza d'onda
         n_1,  # Indice di rifrazione del primo materiale (Vetro)
-        t  # Spessore
+        t,  # Spessore
     ) -> float | np.ndarray:
         """
         Uso la formula indicata dalla Francesca nella sua ultima mail...
@@ -116,54 +110,116 @@ class Transmittance:
         - k    : parte complessa dell'indice di rifrazione complesso del film sottile
         - t    : spessore del film sottile
         """
-
         if isinstance(self.n, Callable) and isinstance(self.k, Callable):
-            c_1 = (self.n(lmbd) + self.n_0) * (n_1 + self.n(lmbd))
-            c_2 = (self.n(lmbd) - self.n_0) * (n_1 - self.n(lmbd))
-            # Calcolo coefficente alpha, è la vecchia beer lambert
-            alpha = np.exp(-4 * np.pi * self.k(lmbd) * t / lmbd)
-            # Calcolo numeratore
-            T_num = 16 * self.n(lmbd) ** 2 * self.n_0 * n_1 * alpha
-            # Calcolo denominatore
-            T_denom = (
-                c_1**2
-                + c_2**2 * alpha**2
-                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n(lmbd) * t / lmbd)
-            )
+            n = self.n(lmbd)
+            k = self.k(lmbd)
         elif isinstance(self.n, float) and isinstance(self.n, float):
-            c_1 = (self.n + self.n_0) * (n_1 + self.n)
-            c_2 = (self.n - self.n_0) * (n_1 - self.n)
-            # Ma guarda chi si rivede. La vecchia Beer Lambert... alla fine avevi qualche uso
-            alpha = np.exp(-4 * np.pi * self.k * t / lmbd)
-            # Calcolo numeratore
-            T_num = 16 * self.n**2 * self.n_0 * n_1 * alpha
-            # Calcolo denominatore
-            T_denom = (
-                c_1**2
-                + c_2**2 * alpha**2
-                + 2 * c_1 * c_2 * alpha * np.cos(4 * np.pi * self.n * t / lmbd)
-            )
+            n = self.n
+            k = self.k
         else:
-            print("n and k have incompatible types, Raise Error")
             raise TypeError
 
+        c_1 = (n + self.n_0) * (n_1 + n)
+        c_2 = (n - self.n_0) * (n_1 - n)
+        # Calcolo coefficente alpha, è la vecchia beer lambert
+        alpha = np.exp(-4.0 * np.pi * k * t / lmbd)
+        beta = 4.0 * np.pi * n * t / lmbd
+        # Calcolo numeratore
+        T_num = 16.0 * n**2 * self.n_0 * n_1 * alpha
+        # Calcolo denominatore
+        T_denom = (
+            c_1**2 + c_2**2 * alpha**2 + 2.0 * c_1 * c_2 * alpha * np.cos(beta)
+        )
         T = T_num / T_denom
-
         return T
 
-    def transmittance_complex(self, lmbd, eta: Callable | complex, n_0, n_1, t):
+    def transmittance_exact(
+        self, lmbd, t  # la classe stessa  # lunghezza d'onda  # Spessore
+    ) -> float | np.ndarray:
         """
-        versione di tranmittance che usa eta complesso,
-        invece che l'indice di rifrazione diviso nelle sue componenti
-        Si potrebbe eliminare...
+        Formula esatta:
+        - lmbd : lambda, la lunghezza d'onda della luce incidente
+        - n    : parte reale dell'indice di rifrazione complesso del film sottile
+        - k    : parte complessa dell'indice di rifrazione complesso del film sottile
+        - t    : spessore del film sottile
         """
-        if isinstance(eta, Callable):
-            n = eta(lmbd).real()
-            k = -eta(lmbd).imag()
+        if isinstance(self.n, Callable) and isinstance(self.k, Callable):
+            n = self.n(lmbd)
+            k = self.k(lmbd)
+        elif isinstance(self.n, float) and isinstance(self.k, float):
+            n = self.n
+            k = self.k
         else:
-            n = eta.real()
-            k = -eta.imag()
-        return self.transmittance(lmbd=lmbd, n=n, k=k, n_0=n_0, n_1=n_1, t=t)
+            raise TypeError
+
+        alpha = np.exp(-4 * np.pi * k * t / lmbd)
+        beta = 4.0 * np.pi * n * t / lmbd
+
+        a_1 = (n + self.n_0) ** 2 + k**2
+        a_2 = (n + self.n_1) ** 2 + k**2
+
+        b_1 = (n - self.n_0) ** 2 + k**2
+        b_2 = (n - self.n_1) ** 2 + k**2
+
+        c_1 = n**2 - self.n_0**2 + k**2
+        c_2 = n**2 - self.n_1**2 + k**2
+        c_3 = 4.0 * k**2 * self.n_0 * self.n_1
+
+        d_1 = 2.0 * k * self.n_1 * c_1
+        d_2 = 2.0 * k * self.n_0 * c_2
+
+        A = a_1 * a_2
+        B = b_1 * b_2
+        C = -c_1 * c_2 + c_3
+        D = d_1 + d_2
+
+        # Calcolo numeratore
+        T_num = 16.0 * self.n_0 * self.n_1 * (n**2 + k**2) * alpha
+        # Calcolo denominatore
+        T_denom = (
+            A + B * alpha**2 + 2.0 * alpha * (C * np.cos(beta) + D * np.sin(beta))
+        )
+        T = T_num / T_denom
+        return T
+
+    def transmittance_exact_n_free(self, lmbd, n_1, t) -> float | np.ndarray:
+        if isinstance(self.n, Callable) and isinstance(self.k, Callable):
+            n = self.n(lmbd)
+            k = self.k(lmbd)
+        elif isinstance(self.n, float) and isinstance(self.k, float):
+            n = self.n
+            k = self.k
+        else:
+            raise TypeError
+
+        alpha = np.exp(-4.0 * np.pi * k * t / lmbd)
+        beta = 4.0 * np.pi * n * t / lmbd
+
+        a_1 = (n + self.n_0) ** 2 + k**2
+        a_2 = (n + n_1) ** 2 + k**2
+
+        b_1 = (n - self.n_0) ** 2 + k**2
+        b_2 = (n - n_1) ** 2 + k**2
+
+        c_1 = n**2 - self.n_0**2 + k**2
+        c_2 = n**2 - n_1**2 + k**2
+        c_3 = 4.0 * k**2 * self.n_0 * n_1
+
+        d_1 = 2.0 * k * n_1 * c_1
+        d_2 = 2.0 * k * self.n_0 * c_2
+
+        A = a_1 * a_2
+        B = b_1 * b_2
+        C = -c_1 * c_2 + c_3
+        D = d_1 + d_2
+
+        # Calcolo numeratore
+        T_num = 16.0 * self.n_0 * n_1 * (n**2 + k**2) * alpha
+        # Calcolo denominatore
+        T_denom = (
+            A + B * alpha**2 + 2.0 * alpha * (C * np.cos(beta) + D * np.sin(beta))
+        )
+        return T_num / T_denom
 
 
 # %% Testiamo se tutto funziona

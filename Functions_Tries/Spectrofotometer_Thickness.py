@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Callable
 from collections.abc import Iterable
 # import asyncio
+import matplotlib
+matplotlib.use("Cairo")
+
 
 # # Il codice seguente serve al fit dello spessore dagli spettri ottenuti dallo spettrofotometro
 #
@@ -28,6 +31,7 @@ def general_optimizer(
     y_bound: Iterable = (0.0, 1.0),
     graph_title: str = "",
     graph_dir: str | Path = "./images",
+    opt_bound: Iterable = (-np.inf, np.inf)
 ) -> tuple:
     """
     Funzione che va a fare i fit in maniera automatica, indipendentemente dalla funzione in ingresso
@@ -58,6 +62,7 @@ def general_optimizer(
         df_clean["polished"],
         p0=p0,
         sigma=df_clean["trasm_error"],
+        bounds=opt_bound
     )
 
     # Calcolo errore
@@ -151,9 +156,10 @@ def general_optimizer(
         fig.savefig(dest / path.with_suffix("." + sur).name, format=sur)
 
     # Per qualche motivo non resetta i canvas... lo forziamo a pulirsi
-    plt.clf()
+    fig.clf()
+    # plt.clf()
     plt.cla()
-    plt.close()
+    # plt.close()
 
     # Riportiamo finalmente i risulati, in ordine sono il parametro ottimizzato, il suo errore,
     # il chi quadro ridotto, i gradi di libertà
