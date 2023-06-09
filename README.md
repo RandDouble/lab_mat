@@ -20,13 +20,21 @@ Sono file sorgenti di python, in questo caso sono tutte funzioni scritte ad oc p
 
 ### Notebook
 
+- `PulitoreDati.ipynb` serve per utilizzre `cleaner.py` basta. Si potrebbe sostituire con un altro file di python, uno script shell o un makefile, ma questa è la strada più stupida.
+
 - `absorbance_graph.ipynb` dovrebbe contenere tutti i file dell'assorbanza... alla fine della fiera ne contiene uno
-- `fit_lab.ipynb` contiene vari fit dei dati del palik, presto conterrà anche quelli del Johnson
+
+- `fit_lab.ipynb` contiene vari fit dei dati del palik e del Johnson
+
 - `gradino_3D.ipynb` contiene i grafici 3D dei vari scalini e i relativi istogrammi
-- `grafici_spettri.ipynb` contiene i primi spettri che abbiamo plottato, quindi anche il prototipo per la pulizia dei dati, contiene per qualche motivo le informazioni riguardanti la $k_\lambda$ e contiene per qualche altro motivo i fit della legge dei coseni... In pratica contiene tutto quello che dovrebbe contenere più roba che non c'entra un cazzo
+- `grafici_spettri.ipynb` contiene i primi spettri che abbiamo plottato, quindi anche il prototipo per la pulizia dei dati, contiene per qualche motivo le informazioni riguardanti la $k_\lambda$ e contiene per qualche altro motivo i fit della legge dei coseni... In pratica contiene tutto quello che dovrebbe contenere più roba che non c'entra un cazzo.
+
 - `lab_mat_distribution.ipynb` altro notebook che potrebbe venire buttato, se non fosse che ha un po' di teoria utile all'interno... si potrebbe trasferire tutto da un'altra parte... contiene anche il primo disegno del coseno alla quarta
+
 - `new_graph_21_04.ipynb` contiene gli ultimi grafici fatti, ma neanche tutti
+
 - `probable_dist.ipynb` si potrebbe anche buttare, dovrebbe rappresentare le varie distribuzioni coseno in base alla distanza dalla sorgente, idealmente il fit del coseno dovrebbe essere fatto qua dentro
+
 - `Spettrofotometro.ipynb`, dentro ci sono tutte le stampe fatte
 
 ## TODO
