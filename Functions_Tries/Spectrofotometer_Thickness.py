@@ -119,7 +119,7 @@ def general_optimizer(
         ax.plot(
             df_clean["lambda"] * 1e9,
             fit_func(df_clean["lambda"], *popt),
-            label=f"fit : {popt[0]*1e9:.2f} nm\n$n_1$ : {popt[1]:.2f}",
+            label=f"fit : {popt[1]*1e9:.2f} nm\n$n_1$ : {popt[0]:.2f}",
             color="b",
         )
         ax.fill_between(

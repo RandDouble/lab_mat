@@ -7,6 +7,7 @@ maybe in the future, depending on how many application we need to use ti can be 
 # %%
 import pandas as pd
 from pathlib import Path
+import numpy as np
 
 # import os
 
@@ -45,8 +46,10 @@ def clean(
     # make operation
     data[new_col_name] = data[col_name] / zero[col_name]
     data["lambda"] *= 1e-9
-    data["trasm_error"] = data["polished"] * 0.6 / 100
-    # data["trasm_error"] = 0.6 / 100
+    # data["trasm_error"] = data["polished"] * 0.6 / 100 
+    data["trasm_error"] = 0.3 * np.sqrt(2) / 100 # Errore dello spettrofotometro: 0.3 per misura, poi sommato
+                                                    #in quadratura con se stesso perchè presente sempre anche errore del
+                                                    #fondo dell'aria
     # return new data
     data.to_csv(return_dir.as_posix() + "/" + base_name + ".csv", index=False)
 
