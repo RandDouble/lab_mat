@@ -1,12 +1,16 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_cairo import FigureCanvasCairo as FigureCanvas
 from scipy.optimize import curve_fit
 import pandas as pd
 import numpy as np
 from pathlib import Path
 from typing import Callable
 from collections.abc import Iterable
+
 # import asyncio
-import matplotlib
+
 matplotlib.use("Cairo")
 
 
@@ -31,7 +35,7 @@ def general_optimizer(
     y_bound: Iterable = (0.0, 1.0),
     graph_title: str = "",
     graph_dir: str | Path = "./images",
-    opt_bound: Iterable = (-np.inf, np.inf)
+    opt_bound: Iterable = (-np.inf, np.inf),
 ) -> tuple:
     """
     Funzione che va a fare i fit in maniera automatica, indipendentemente dalla funzione in ingresso
@@ -47,13 +51,13 @@ def general_optimizer(
     # Leggiamo i dati
     df = pd.read_csv(path)
     # Filtro per le lunghezze d'onda
-    filter_λ = (df["lambda"] > wavelen_bound[0]) & (
-        df["lambda"] < wavelen_bound[1]
-    )
+    filter_λ = (df["lambda"] > wavelen_bound[0]) & (df["lambda"] < wavelen_bound[1])
     # Ci sono capitati dati uguali a zero... questi creano problemi, via dal dataframe
     # Revisione successiva introduce delle condizioni più strette... I dati che si possono usare sono quelli che
     # sono maggiori di 0 e minori di 1... Le altre condizioni sono solo spiacevoli infortuni.
-    df_clean = df[filter_λ & (df["polished"] > y_bound[0]) & (df["polished"] < y_bound[1])]
+    df_clean = df[
+        filter_λ & (df["polished"] > y_bound[0]) & (df["polished"] < y_bound[1])
+    ]
 
     # Calcoliamo lo spessore e il suo errore
     popt, pcov = curve_fit(
@@ -62,15 +66,14 @@ def general_optimizer(
         df_clean["polished"],
         p0=p0,
         sigma=df_clean["trasm_error"],
-        bounds=opt_bound
+        bounds=opt_bound,
     )
 
     # Calcolo errore
     err = np.sqrt(np.diag(pcov))
     # Calcolo del Chi quadro... Potrebbe essere inserito nel grafico, ma non ho voglia
     chisq_rid = np.sum(
-        (df_clean["polished"] - fit_func(df_clean["lambda"], *popt))
-        ** 2
+        (df_clean["polished"] - fit_func(df_clean["lambda"], *popt)) ** 2
         / df_clean["trasm_error"] ** 2
     ) / len(df_clean)
 
@@ -87,7 +90,9 @@ def general_optimizer(
         dest.mkdir(parents=True, exist_ok=True)
 
     # Ora Grafichiamo
-    fig, ax = plt.subplots()
+    fig = Figure()
+    canvas = FigureCanvas(fig)
+    ax = fig.add_subplot(111)
     # Aggiungiamo i dati, ho riscalato le misure per avere sull'asse x dei nm e non dei metri illeggibili
     # Dati originali
     ax.plot(
@@ -137,10 +142,7 @@ def general_optimizer(
     # Plotto gli scarti (y - f(x)), chiesto dalla Fra
     ax.plot(
         df_clean["lambda"] * 1e9,
-        np.abs(
-            fit_func(df_clean["lambda"], *popt)
-            - df_clean["polished"]
-        ),
+        np.abs(fit_func(df_clean["lambda"], *popt) - df_clean["polished"]),
         "r--",
         label="residues",
     )
@@ -153,12 +155,11 @@ def general_optimizer(
 
     # Salviamo l'immagine, sia in formato svg che in formato pdf...
     for sur in ("svg", "pdf", "png"):
-        fig.savefig(dest / path.with_suffix("." + sur).name, format=sur)
+        canvas.print_figure(dest / path.with_suffix("." + sur).name, format=sur)
 
     # Per qualche motivo non resetta i canvas... lo forziamo a pulirsi
     fig.clf()
     # plt.clf()
-    plt.cla()
     # plt.close()
 
     # Riportiamo finalmente i risulati, in ordine sono il parametro ottimizzato, il suo errore,
